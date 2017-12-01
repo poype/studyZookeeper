@@ -11,8 +11,21 @@ public class CreateSessionWatcher implements Watcher {
 
     public void process(WatchedEvent watchedEvent) {
         if (watchedEvent.getState() == Event.KeeperState.SyncConnected) { //判断是否已连接
-            getChildrenAsync();
+            if(watchedEvent.getType() == Event.EventType.None && null == watchedEvent.getPath()) {
+                System.out.println("11111");
+                try {
+                    watchChildrenNode();
+                } catch (KeeperException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            } else if(watchedEvent.getType() == Event.EventType.NodeChildrenChanged) {
+                System.out.println("2222");
+                System.out.println("监控到节点发生了变化");
+            }
         }
+        System.out.println(watchedEvent.getState());
     }
 
     // 同步创建一个节点
@@ -43,7 +56,8 @@ public class CreateSessionWatcher implements Watcher {
         }
     }
 
-    private void  getChildrenAsync() {
+    // 异步获取一个节点的子节点列表
+    private void getChildrenAsync() {
         zooKeeper.getChildren("/", false, new AsyncCallback.Children2Callback() {
             public void processResult(int resultCode, String path, Object ctx, List<String> children, Stat stat) {
                 System.out.println(resultCode);  // 结果状态码，0代表成功
@@ -55,6 +69,10 @@ public class CreateSessionWatcher implements Watcher {
                 System.out.println(stat);
             }
         }, "获取/下面的子节点");
+    }
+
+    private void watchChildrenNode() throws KeeperException, InterruptedException {
+        zooKeeper.getChildren("/", true);
     }
 
     public void setZooKeeper(ZooKeeper zooKeeper) {
