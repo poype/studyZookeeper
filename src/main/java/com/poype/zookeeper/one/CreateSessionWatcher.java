@@ -1,6 +1,7 @@
 package com.poype.zookeeper.one;
 
 import org.apache.zookeeper.*;
+import org.apache.zookeeper.data.Stat;
 
 import java.util.List;
 
@@ -10,13 +11,7 @@ public class CreateSessionWatcher implements Watcher {
 
     public void process(WatchedEvent watchedEvent) {
         if (watchedEvent.getState() == Event.KeeperState.SyncConnected) { //判断是否已连接
-            try {
-                getChildrenSync();
-            } catch (KeeperException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            getChildrenAsync();
         }
     }
 
@@ -46,6 +41,20 @@ public class CreateSessionWatcher implements Watcher {
         for(String child : childrenNode) {
             System.out.println(child);
         }
+    }
+
+    private void  getChildrenAsync() {
+        zooKeeper.getChildren("/", false, new AsyncCallback.Children2Callback() {
+            public void processResult(int resultCode, String path, Object ctx, List<String> children, Stat stat) {
+                System.out.println(resultCode);  // 结果状态码，0代表成功
+                System.out.println(path);        // 获取哪个节点下面的子节点
+                System.out.println(ctx);
+                for(String child : children) {
+                    System.out.println(child);
+                }
+                System.out.println(stat);
+            }
+        }, "获取/下面的子节点");
     }
 
     public void setZooKeeper(ZooKeeper zooKeeper) {
