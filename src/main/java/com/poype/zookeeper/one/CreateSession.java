@@ -8,8 +8,9 @@ import java.util.concurrent.TimeUnit;
 public class CreateSession {
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        ZooKeeper zooKeeper = new ZooKeeper("192.168.1.108:2181", 5000,
-                new CreateSessionWatcher());
+        CreateSessionWatcher watcher = new CreateSessionWatcher();
+        ZooKeeper zooKeeper = new ZooKeeper("192.168.1.108:2181", 5000, watcher);
+        watcher.setZooKeeper(zooKeeper);
         TimeUnit.MILLISECONDS.sleep(Integer.MAX_VALUE);
     }
 }
