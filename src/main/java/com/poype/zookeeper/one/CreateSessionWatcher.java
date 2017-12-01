@@ -12,7 +12,6 @@ public class CreateSessionWatcher implements Watcher {
     public void process(WatchedEvent watchedEvent) {
         if (watchedEvent.getState() == Event.KeeperState.SyncConnected) { //判断是否已连接
             if(watchedEvent.getType() == Event.EventType.None && null == watchedEvent.getPath()) {
-                System.out.println("11111");
                 try {
                     watchChildrenNode();
                 } catch (KeeperException e) {
@@ -21,8 +20,14 @@ public class CreateSessionWatcher implements Watcher {
                     e.printStackTrace();
                 }
             } else if(watchedEvent.getType() == Event.EventType.NodeChildrenChanged) {
-                System.out.println("2222");
                 System.out.println("监控到节点发生了变化");
+                try {
+                    watchChildrenNode();  // 事件响应只能生效一次，所以如果还想继续监视子节点的列表变化，就要重新watch一次
+                } catch (KeeperException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
         System.out.println(watchedEvent.getState());
