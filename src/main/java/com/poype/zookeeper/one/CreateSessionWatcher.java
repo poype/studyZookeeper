@@ -12,13 +12,7 @@ public class CreateSessionWatcher implements Watcher {
     public void process(WatchedEvent watchedEvent) {
         if (watchedEvent.getState() == Event.KeeperState.SyncConnected) { //判断是否已连接
             if(watchedEvent.getType() == Event.EventType.None && null == watchedEvent.getPath()) {
-                try {
-                    getDataSync();
-                } catch (KeeperException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                getDataAsync();
             } else if(watchedEvent.getType() == Event.EventType.NodeChildrenChanged) {
                 System.out.println("监控到节点发生了变化");
                 try {
@@ -30,13 +24,7 @@ public class CreateSessionWatcher implements Watcher {
                 }
             } else if(watchedEvent.getType() == Event.EventType.NodeDataChanged) {
                 System.out.println("监控到节点的数据发生变化");
-                try {
-                    getDataSync();
-                } catch (KeeperException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                getDataAsync();
             }
         }
         System.out.println(watchedEvent.getState());
@@ -96,6 +84,18 @@ public class CreateSessionWatcher implements Watcher {
         byte[] data = zooKeeper.getData("/node_1",true, stat);
         System.out.println(new String(data));
         System.out.println(stat);
+    }
+
+    private void getDataAsync() {
+        zooKeeper.getData("/node_1", true, new AsyncCallback.DataCallback() {
+            public void processResult(int resultCode, String path, Object ctx, byte[] data, Stat stat) {
+                System.out.println(resultCode);
+                System.out.println(path);
+                System.out.println(ctx);
+                System.out.println(new String(data));
+                System.out.println(stat);
+            }
+        }, "异步获取节点的数据值");
     }
 
     public void setZooKeeper(ZooKeeper zooKeeper) {
