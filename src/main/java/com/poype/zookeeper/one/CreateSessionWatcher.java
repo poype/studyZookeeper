@@ -13,7 +13,7 @@ public class CreateSessionWatcher implements Watcher {
         if (watchedEvent.getState() == Event.KeeperState.SyncConnected) { //判断是否已连接
             if(watchedEvent.getType() == Event.EventType.None && null == watchedEvent.getPath()) {
                 try {
-                    watchChildrenNode();
+                    getDataSync();
                 } catch (KeeperException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
@@ -23,6 +23,15 @@ public class CreateSessionWatcher implements Watcher {
                 System.out.println("监控到节点发生了变化");
                 try {
                     watchChildrenNode();  // 事件响应只能生效一次，所以如果还想继续监视子节点的列表变化，就要重新watch一次
+                } catch (KeeperException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            } else if(watchedEvent.getType() == Event.EventType.NodeDataChanged) {
+                System.out.println("监控到节点的数据发生变化");
+                try {
+                    getDataSync();
                 } catch (KeeperException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
@@ -78,6 +87,15 @@ public class CreateSessionWatcher implements Watcher {
 
     private void watchChildrenNode() throws KeeperException, InterruptedException {
         zooKeeper.getChildren("/", true);
+    }
+
+    // 同步获取节点的数据
+    private void getDataSync() throws KeeperException, InterruptedException {
+        Stat stat = new Stat();
+        // getData的返回值是该节点的数据值，节点的状态信息会赋值给stat对象
+        byte[] data = zooKeeper.getData("/node_1",true, stat);
+        System.out.println(new String(data));
+        System.out.println(stat);
     }
 
     public void setZooKeeper(ZooKeeper zooKeeper) {
