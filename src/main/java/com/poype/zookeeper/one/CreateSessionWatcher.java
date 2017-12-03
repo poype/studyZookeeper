@@ -12,13 +12,7 @@ public class CreateSessionWatcher implements Watcher {
     public void process(WatchedEvent watchedEvent) {
         if (watchedEvent.getState() == Event.KeeperState.SyncConnected) { //判断是否已连接
             if(watchedEvent.getType() == Event.EventType.None && null == watchedEvent.getPath()) {
-                try {
-                    deleteSync();
-                } catch (KeeperException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                deleteAsync();
             } else if(watchedEvent.getType() == Event.EventType.NodeChildrenChanged) {
                 System.out.println("监控到节点发生了变化");
                 try {
@@ -106,6 +100,16 @@ public class CreateSessionWatcher implements Watcher {
 
     private void deleteSync() throws KeeperException, InterruptedException {
         zooKeeper.delete("/node_1", 12);
+    }
+
+    private void deleteAsync() {
+        zooKeeper.delete("/poype_node", 3, new AsyncCallback.VoidCallback() {
+            public void processResult(int resultCode, String path, Object ctx) {
+                System.out.println(resultCode);
+                System.out.println(path);
+                System.out.println(ctx);
+            }
+        }, "异步删除一个节点");
     }
 
     public void setZooKeeper(ZooKeeper zooKeeper) {
